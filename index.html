@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phase Zero</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #000;
+      color: #00ff41;
+      font-family: 'Share Tech Mono', 'Courier New', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    /* Scanline overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.05) 2px,
+        rgba(0, 0, 0, 0.05) 4px
+      );
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3rem;
+    }
+
+    /* --- Header --- */
+    header {
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      text-shadow: 0 0 8px #00ff41, 0 0 20px #00ff4180;
+      animation: flicker 6s infinite;
+    }
+
+    .section-heading {
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      text-shadow: 0 0 8px #00ff41, 0 0 20px #00ff4180;
+      animation: flicker 6s infinite;
+      text-align: center;
+    }
+
+    /* --- Countdown --- */
+    #countdown {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .unit .value {
+      font-size: clamp(2.5rem, 10vw, 5rem);
+      font-weight: bold;
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 10px #00ff41, 0 0 30px #00ff4190;
+      min-width: 2ch;
+      text-align: center;
+    }
+
+    .unit .label {
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+
+    .separator {
+      font-size: clamp(2.5rem, 10vw, 5rem);
+      line-height: 1;
+      text-shadow: 0 0 10px #00ff41;
+      align-self: flex-start;
+      padding-top: 0.1em;
+    }
+
+    /* --- Expired message --- */
+    #expired-msg {
+      display: none;
+      font-size: 2rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px #00ff41, 0 0 30px #00ff41;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    /* --- Code box --- */
+    .code-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .code-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+
+    .code-wrapper {
+      position: relative;
+      width: 100%;
+      border: 1px solid #00ff41;
+      box-shadow: 0 0 8px #00ff4150, inset 0 0 8px #00ff4115;
+    }
+
+    #encoded-string {
+      width: 100%;
+      background: #000;
+      color: #00ff41;
+      font-family: 'Share Tech Mono', 'Courier New', monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      padding: 1rem;
+      border: none;
+      outline: none;
+      resize: vertical;
+      min-height: 120px;
+      word-break: break-all;
+    }
+
+    #copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: transparent;
+      color: #00ff41;
+      border: 1px solid #00ff41;
+      font-family: 'Share Tech Mono', 'Courier New', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.7rem;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+    }
+
+    #copy-btn:hover {
+      background: #00ff41;
+      color: #000;
+      box-shadow: 0 0 10px #00ff41;
+    }
+
+    #copy-btn.copied {
+      background: #00ff41;
+      color: #000;
+    }
+
+    /* --- Animations --- */
+    @keyframes flicker {
+      0%, 95%, 100%  { opacity: 1; }
+      96%            { opacity: 0.6; }
+      97%            { opacity: 1; }
+      98%            { opacity: 0.4; }
+      99%            { opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.4; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Countdown to CE Offsite PowerShell Hackathon</h1>
+    </header>
+
+    <div id="countdown">
+      <div class="unit">
+        <span class="value" id="days">00</span>
+        <span class="label">Days</span>
+      </div>
+      <span class="separator">:</span>
+      <div class="unit">
+        <span class="value" id="hours">00</span>
+        <span class="label">Hours</span>
+      </div>
+      <span class="separator">:</span>
+      <div class="unit">
+        <span class="value" id="minutes">00</span>
+        <span class="label">Minutes</span>
+      </div>
+      <span class="separator">:</span>
+      <div class="unit">
+        <span class="value" id="seconds">00</span>
+        <span class="label">Seconds</span>
+      </div>
+    </div>
+
+    <div id="expired-msg">// INITIATED //</div>
+
+    <h1 class="section-heading">Phase Zero Challenge</h1>
+
+    <div class="code-section">
+      <span class="code-label">// encoded payload</span>
+      <div class="code-wrapper">
+        <textarea id="encoded-string" readonly spellcheck="false">UGhhc2UgWmVybyBDaGFsbGVuZ2U=</textarea>
+        <button id="copy-btn" onclick="copyCode()">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Target: Tuesday, April 21, 2026 at 1:00 PM Mountain Time (MDT = UTC-6)
+    const TARGET = new Date('2026-04-21T13:00:00-06:00');
+
+    function pad(n) {
+      return String(n).padStart(2, '0');
+    }
+
+    function tick() {
+      const now = new Date();
+      const diff = TARGET - now;
+
+      if (diff <= 0) {
+        document.getElementById('countdown').style.display = 'none';
+        document.getElementById('expired-msg').style.display = 'block';
+        return;
+      }
+
+      const totalSec = Math.floor(diff / 1000);
+      const days    = Math.floor(totalSec / 86400);
+      const hours   = Math.floor((totalSec % 86400) / 3600);
+      const minutes = Math.floor((totalSec % 3600) / 60);
+      const seconds = totalSec % 60;
+
+      document.getElementById('days').textContent    = pad(days);
+      document.getElementById('hours').textContent   = pad(hours);
+      document.getElementById('minutes').textContent = pad(minutes);
+      document.getElementById('seconds').textContent = pad(seconds);
+    }
+
+    tick();
+    setInterval(tick, 1000);
+
+    function copyCode() {
+      const ta = document.getElementById('encoded-string');
+      navigator.clipboard.writeText(ta.value).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 1500);
+      }).catch(() => {
+        // Fallback for older browsers
+        ta.select();
+        document.execCommand('copy');
+      });
+    }
+  </script>
+</body>
+</html>
